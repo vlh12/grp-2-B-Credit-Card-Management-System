@@ -1,0 +1,172 @@
+-- ============================================================
+-- CREDIT CARD MANAGEMENT SYSTEM
+-- Database Verification Queries
+-- ============================================================
+
+
+-- List application tables
+SELECT table_name
+FROM user_tables
+WHERE table_name LIKE '%_CA'
+ORDER BY table_name;
+
+
+-- ============================================================
+-- CUSTOMERS
+-- ============================================================
+
+SELECT *
+FROM customers_ca
+ORDER BY customer_id;
+
+
+-- ============================================================
+-- MERCHANTS
+-- ============================================================
+
+SELECT *
+FROM merchants_ca
+ORDER BY merchant_id;
+
+
+-- ============================================================
+-- CREDIT CARDS
+-- ============================================================
+
+SELECT *
+FROM credit_cards_ca
+ORDER BY customer_id;
+
+
+-- Customer -> Credit Card relationship
+SELECT
+    c.customer_id,
+    c.customer_name,
+    cc.card_number,
+    cc.card_type,
+    cc.credit_limit,
+    cc.available_credit,
+    cc.outstanding_amount,
+    cc.expiry_date,
+    cc.card_status
+FROM customers_ca c
+JOIN credit_cards_ca cc
+    ON c.customer_id = cc.customer_id
+ORDER BY c.customer_id;
+
+
+-- ============================================================
+-- TRANSACTIONS
+-- ============================================================
+
+SELECT
+    transaction_id,
+    card_number,
+    transaction_type,
+    amount,
+    merchant_id,
+    transaction_date,
+    status
+FROM transactions_ca
+ORDER BY transaction_date DESC;
+
+
+-- ============================================================
+-- CARD BALANCE CHECK
+-- ============================================================
+
+SELECT
+    card_number,
+    credit_limit,
+    available_credit,
+    outstanding_amount,
+    card_status
+FROM credit_cards_ca
+ORDER BY card_number;
+
+
+-- ============================================================
+-- PURCHASE TRANSACTIONS
+-- ============================================================
+
+SELECT *
+FROM transactions_ca
+WHERE transaction_type = 'PURCHASE'
+ORDER BY transaction_date DESC;
+
+
+-- ============================================================
+-- PAYMENT TRANSACTIONS
+-- ============================================================
+
+SELECT *
+FROM transactions_ca
+WHERE transaction_type = 'PAYMENT'
+ORDER BY transaction_date DESC;
+
+
+-- ============================================================
+-- FAILED TRANSACTIONS
+-- ============================================================
+
+SELECT *
+FROM transactions_ca
+WHERE status = 'FAILED'
+ORDER BY transaction_date DESC;
+
+
+-- ============================================================
+-- BLOCKED CARDS
+-- ============================================================
+
+SELECT *
+FROM credit_cards_ca
+WHERE card_status = 'BLOCKED';
+
+
+-- ============================================================
+-- CARDS BELOW 20% AVAILABLE CREDIT
+-- ============================================================
+
+SELECT
+    card_number,
+    credit_limit,
+    available_credit,
+    outstanding_amount
+FROM credit_cards_ca
+WHERE available_credit < credit_limit * 0.20;
+
+
+-- ============================================================
+-- TOTAL OUTSTANDING
+-- ============================================================
+
+SELECT
+    SUM(outstanding_amount) AS total_outstanding
+FROM credit_cards_ca;
+
+
+-- ============================================================
+-- TODAY'S SUCCESSFUL PURCHASES
+-- ============================================================
+
+SELECT
+    NVL(SUM(amount), 0) AS today_purchase_total
+FROM transactions_ca
+WHERE transaction_type = 'PURCHASE'
+  AND status = 'SUCCESS'
+  AND transaction_date >= TRUNC(SYSDATE)
+  AND transaction_date < TRUNC(SYSDATE) + 1;
+
+
+-- ============================================================
+-- TODAY'S SUCCESSFUL PAYMENTS
+-- ============================================================
+
+SELECT
+    NVL(SUM(amount), 0) AS today_payment_total
+FROM transactions_ca
+WHERE transaction_type = 'PAYMENT'
+  AND status = 'SUCCESS'
+  AND transaction_date >= TRUNC(SYSDATE)
+  AND transaction_date < TRUNC(SYSDATE) + 1;
