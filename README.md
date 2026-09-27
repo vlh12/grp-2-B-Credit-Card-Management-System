@@ -1,84 +1,90 @@
 # Credit Card Management System
 
-A Java-based fintech application for managing customers, credit cards, merchants, purchases, payments, and credit card transaction history.
+A Java-based fintech application for managing **customers, credit cards, merchants, purchases, bill payments, transaction history, and financial reports**.
 
-The project is being developed as a hands-on enterprise application using **Java 25, Spring Boot, Spring Data JPA, REST APIs, and Oracle Database 26ai**.
+The project demonstrates enterprise application development using **Java 25, Spring Boot, Spring Data JPA, REST APIs, Hibernate, and Oracle Database 26ai**.
 
 ---
 
 ## Project Objective
 
-The objective of the Credit Card Management System is to provide REST APIs through which a bank can:
+The Credit Card Management System provides REST APIs that allow a bank to:
 
-- Manage customers
-- Manage merchants
+- Register and manage customers
+- Add and manage merchants
 - Issue and manage credit cards
-- Block and unblock cards
+- Block and unblock credit cards
 - Process credit card purchases
 - Process full and partial bill payments
-- Maintain purchase and payment transaction history
-- Track available credit and outstanding balances
+- Track available credit
+- Track outstanding balances
+- Maintain complete transaction history
+- Record successful and failed transactions
 - Generate financial and operational reports
 
 ---
 
-## Technology Stack
+# Technology Stack
 
-| Technology | Usage |
+| Technology | Purpose |
 |---|---|
 | Java SE 25 | Programming language |
 | Spring Boot 3.x | Application framework |
 | Spring Web | REST API development |
 | Spring Data JPA | Persistence layer |
-| Hibernate | JPA implementation / ORM |
+| Hibernate | ORM / JPA implementation |
 | Jakarta Validation | Request validation |
 | Oracle Database 26ai | Database |
-| Oracle JDBC Driver | Oracle connectivity |
+| Oracle JDBC Driver | Database connectivity |
 | Maven | Build and dependency management |
 | Postman | REST API testing |
-| Git / GitHub | Version control |
+| Git | Version control |
+| GitHub | Source code repository |
 
 ---
 
-## Architecture
+# Architecture
 
-The project follows a layered architecture.
+The project follows a **Layered Architecture**.
 
 ```text
-Client / Postman
-       |
-       v
-+-------------------+
-| Controller Layer  |
-+-------------------+
-       |
-       v
-+-------------------+
-|   Service Layer   |
-+-------------------+
-       |
-       v
-+-------------------+
-| Repository Layer  |
-+-------------------+
-       |
-       v
-+-------------------+
-| Spring Data JPA   |
-|    / Hibernate    |
-+-------------------+
-       |
-       v
-+-------------------+
-| Oracle Database   |
-+-------------------+
+                    Client / Postman
+                           |
+                           | HTTP / JSON
+                           v
+                 +--------------------+
+                 | Controller Layer   |
+                 +--------------------+
+                           |
+                           v
+                 +--------------------+
+                 | Service Layer      |
+                 | Business Rules     |
+                 +--------------------+
+                           |
+                           v
+                 +--------------------+
+                 | Repository Layer   |
+                 | Spring Data JPA    |
+                 +--------------------+
+                           |
+                           v
+                 +--------------------+
+                 | Hibernate / JDBC   |
+                 +--------------------+
+                           |
+                           v
+                 +--------------------+
+                 | Oracle Database    |
+                 |      26ai          |
+                 +--------------------+
 ```
 
-The application is currently designed as a **single Spring Boot application using layered architecture**, rather than microservices.
+The current application is a **single Spring Boot application using layered architecture**, not a microservices architecture.
 
 ---
 
-## Project Package Structure
+# Package Structure
 
 ```text
 com.ofss.creditcardmanagement
@@ -88,18 +94,21 @@ com.ofss.creditcardmanagement
 |   +-- MerchantController.java
 |   +-- CreditCardController.java
 |   +-- TransactionController.java
+|   +-- ReportController.java
 |
 +-- service
 |   +-- CustomerService.java
 |   +-- MerchantService.java
 |   +-- CreditCardService.java
 |   +-- TransactionService.java
+|   +-- ReportService.java
 |
 +-- repository
 |   +-- CustomerRepository.java
 |   +-- MerchantRepository.java
 |   +-- CreditCardRepository.java
 |   +-- CardTransactionRepository.java
+|   +-- ReportRepository.java
 |
 +-- entity
 |   +-- Customer.java
@@ -116,6 +125,10 @@ com.ofss.creditcardmanagement
 |   +-- PaymentRequest.java
 |
 +-- exception
+|   +-- ResourceNotFoundException.java
+|   +-- DuplicateResourceException.java
+|   +-- InvalidTransactionException.java
+|   +-- ErrorResponse.java
 |   +-- GlobalExceptionHandler.java
 |
 +-- CreditCardManagementApplication.java
@@ -125,9 +138,9 @@ com.ofss.creditcardmanagement
 
 # Database Design
 
-The application uses Oracle Database 26ai.
+The application uses **Oracle Database 26ai**.
 
-The following application-specific tables have been created:
+The following project-specific tables are used:
 
 ```text
 CUSTOMERS_CA
@@ -136,7 +149,7 @@ CREDIT_CARDS_CA
 TRANSACTIONS_CA
 ```
 
-## Database Relationships
+## Relationships
 
 ```text
 CUSTOMERS_CA
@@ -154,60 +167,49 @@ TRANSACTIONS_CA
 MERCHANTS_CA
 ```
 
-A customer may own multiple credit cards.
+A customer can own multiple credit cards.
 
-A credit card may have multiple transactions.
+A credit card can have multiple transactions.
 
-Purchase transactions are associated with a merchant.
+Purchase transactions reference a merchant.
 
 Payment transactions do not require a merchant.
 
 ---
 
-# Implemented Features
+# 1. Customer Management
 
-## 1. Customer Management
+Customer CRUD operations have been implemented.
 
-Customer management has been implemented using:
+## Features
 
-```text
-CustomerController
-       |
-CustomerService
-       |
-CustomerRepository
-       |
-CUSTOMERS_CA
-```
-
-### Supported Operations
-
-- Register a customer
-- Retrieve all customers
+- Register customer
 - Retrieve customer by ID
+- Retrieve all customers
 - Update customer
 - Delete customer
+- Input validation
 
-### REST APIs
+## APIs
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/customers` | Create customer |
-| GET | `/api/customers` | Get all customers |
-| GET | `/api/customers/{id}` | Get customer by ID |
+| POST | `/api/customers` | Register customer |
+| GET | `/api/customers` | Retrieve all customers |
+| GET | `/api/customers/{id}` | Retrieve customer by ID |
 | PUT | `/api/customers/{id}` | Update customer |
 | DELETE | `/api/customers/{id}` | Delete customer |
 
-### Customer Validation
+## Validation
 
-Validation currently includes:
+Customer validation includes:
 
-- Customer name is required
+- Customer name required
 - Valid email address
 - 10-digit mobile number
 - PAN format validation
-- Maximum field lengths
-- Database uniqueness constraints for relevant customer fields
+- Field-length validation
+- Database uniqueness constraints
 
 ---
 
@@ -215,31 +217,30 @@ Validation currently includes:
 
 Merchant CRUD operations have been implemented.
 
-### Supported Operations
-
-- Add merchant
-- Retrieve all merchants
-- Retrieve merchant by ID
-- Update merchant
-- Delete merchant
-
-### REST APIs
+## APIs
 
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/merchants` | Add merchant |
-| GET | `/api/merchants` | Get all merchants |
-| GET | `/api/merchants/{id}` | Get merchant by ID |
+| GET | `/api/merchants` | Retrieve all merchants |
+| GET | `/api/merchants/{id}` | Retrieve merchant by ID |
 | PUT | `/api/merchants/{id}` | Update merchant |
 | DELETE | `/api/merchants/{id}` | Delete merchant |
+
+Merchant information includes:
+
+- Merchant ID
+- Merchant Name
+- Category
+- Location
 
 ---
 
 # 3. Credit Card Management
 
-Credit card management has been implemented using a JPA relationship between customers and credit cards.
+Credit cards are associated with customers using JPA relationships.
 
-### Card Types
+## Card Types
 
 ```text
 SILVER
@@ -247,31 +248,31 @@ GOLD
 PLATINUM
 ```
 
-### Card Status
+## Card Status
 
 ```text
 ACTIVE
 BLOCKED
 ```
 
-### Implemented Operations
+## Features
 
-- Issue a credit card
-- Retrieve all credit cards
-- Retrieve a card by card number
+- Issue credit card
+- Retrieve all cards
+- Retrieve card by number
 - Retrieve cards belonging to a customer
-- Update credit card information
-- Block a credit card
-- Unblock a credit card
+- Update credit card
+- Block credit card
+- Unblock credit card
 
-### REST APIs
+## APIs
 
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/credit-cards` | Issue credit card |
-| GET | `/api/credit-cards` | Get all cards |
-| GET | `/api/credit-cards/{cardNumber}` | Get card details |
-| GET | `/api/credit-cards/customer/{customerId}` | Get customer's cards |
+| GET | `/api/credit-cards` | Retrieve all cards |
+| GET | `/api/credit-cards/{cardNumber}` | Retrieve card |
+| GET | `/api/credit-cards/customer/{customerId}` | Retrieve customer's cards |
 | PUT | `/api/credit-cards/{cardNumber}` | Update card |
 | PATCH | `/api/credit-cards/{cardNumber}/block` | Block card |
 | PATCH | `/api/credit-cards/{cardNumber}/unblock` | Unblock card |
@@ -279,23 +280,40 @@ BLOCKED
 When a new card is issued:
 
 ```text
-Outstanding Amount = 0
 Available Credit   = Credit Limit
+Outstanding Amount = 0
 Card Status        = ACTIVE
 ```
-
-Available credit and outstanding balance are controlled by the application rather than being directly supplied by API clients.
 
 ---
 
 # 4. Purchase Transactions
 
-Purchase transaction processing has been implemented.
+Customers can make purchases using active credit cards.
 
-### Purchase Flow
+## API
+
+```text
+POST /api/transactions/purchase
+```
+
+Example:
+
+```json
+{
+    "cardNumber": "4222222222222222",
+    "merchantId": 1,
+    "amount": 5000
+}
+```
+
+## Purchase Processing
 
 ```text
 Purchase Request
+       |
+       v
+Lock Credit Card Row
        |
        v
 Find Credit Card
@@ -304,7 +322,10 @@ Find Credit Card
 Find Merchant
        |
        v
-Check Card Status
+Check Card ACTIVE
+       |
+       v
+Check Card Expiry
        |
        v
 Check Available Credit
@@ -317,56 +338,45 @@ Increase Outstanding Amount
        |
        v
 Record PURCHASE Transaction
-```
-
-### Business Rules Implemented
-
-- Card must exist
-- Merchant must exist
-- Card must be `ACTIVE`
-- Blocked cards cannot make purchases
-- Purchase amount must be greater than zero
-- Sufficient available credit must exist
-- Available credit cannot become negative
-- Successful purchases update card balances
-- Successful purchases are recorded
-- Failed business-rule purchases are recorded with `FAILED` status
-
-### Purchase API
-
-```text
-POST /api/transactions/purchase
-```
-
-Example request:
-
-```json
-{
-    "cardNumber": "4222222222222222",
-    "merchantId": 1,
-    "amount": 5000
-}
+       |
+       v
+Commit
 ```
 
 For a successful purchase:
 
 ```text
-Available Credit   = Available Credit - Purchase Amount
-Outstanding Amount = Outstanding Amount + Purchase Amount
+Available Credit =
+    Available Credit - Purchase Amount
+
+Outstanding Amount =
+    Outstanding Amount + Purchase Amount
 ```
+
+## Purchase Business Rules
+
+- Card must exist
+- Merchant must exist
+- Card must be ACTIVE
+- Blocked cards cannot make purchases
+- Expired cards cannot make purchases
+- Purchase amount must be greater than zero
+- Available credit must be sufficient
+- Available credit cannot become negative
+- Successful purchases update card balances
+- Successful purchases are recorded
+- Failed business-rule purchases are recorded with `FAILED` status
 
 ---
 
 # 5. Bill Payment
 
-Credit card bill payment has been implemented.
-
-The system supports both:
+The application supports both:
 
 - Partial payment
 - Full payment
 
-### Payment API
+## API
 
 ```text
 POST /api/transactions/payment
@@ -384,24 +394,28 @@ Example:
 For a successful payment:
 
 ```text
-Outstanding Amount = Outstanding Amount - Payment Amount
-Available Credit   = Available Credit + Payment Amount
+Outstanding Amount =
+    Outstanding Amount - Payment Amount
+
+Available Credit =
+    Available Credit + Payment Amount
 ```
 
-### Payment Rules
+## Payment Rules
 
 - Card must exist
 - Payment amount must be greater than zero
 - Payment cannot exceed outstanding balance
-- Successful payment updates the card balance
-- Every successful payment generates a transaction record
-- Failed overpayment attempts are recorded as failed transactions
+- Outstanding amount is reduced after payment
+- Available credit is increased after payment
+- Successful payments are recorded
+- Invalid overpayment attempts are recorded as failed transactions
 
 ---
 
 # 6. Transaction Management
 
-The system currently supports two transaction types:
+The system supports:
 
 ```text
 PURCHASE
@@ -415,32 +429,81 @@ SUCCESS
 FAILED
 ```
 
-Transactions contain information including:
+Each transaction contains:
 
 - Transaction ID
-- Card
-- Transaction type
+- Card Number
+- Transaction Type
 - Amount
 - Merchant for purchases
-- Transaction date/time
-- Transaction status
+- Transaction Date and Time
+- Status
 
-### Transaction APIs
+## APIs
 
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/transactions/purchase` | Make purchase |
 | POST | `/api/transactions/payment` | Make payment |
-| GET | `/api/transactions` | Get transaction history |
-| GET | `/api/transactions/card/{cardNumber}` | Get card transaction history |
+| GET | `/api/transactions` | Complete transaction history |
+| GET | `/api/transactions/card/{cardNumber}` | Card transaction history |
 
 ---
 
-# 7. Validation
+# 7. Transaction Safety and Concurrency
 
-Jakarta Bean Validation is being used for API request validation.
+Financial operations use Spring transaction management:
 
-Examples include:
+```java
+@Transactional
+```
+
+Credit card balance updates use **pessimistic database locking**:
+
+```java
+@Lock(LockModeType.PESSIMISTIC_WRITE)
+```
+
+The locked lookup ensures that simultaneous transactions cannot independently update the same card balance based on stale available-credit values.
+
+Example:
+
+```text
+Available Credit = 5000
+
+Request A: Purchase 4000
+Request B: Purchase 4000
+
+Request A
+    |
+    +-- Lock Card
+    +-- Available = 5000
+    +-- Purchase = 4000
+    +-- Available = 1000
+    +-- Commit
+    +-- Release Lock
+
+Request B
+    |
+    +-- Wait for lock
+    +-- Read Available = 1000
+    +-- Purchase 4000 rejected
+    +-- FAILED transaction recorded
+```
+
+This helps protect the rule:
+
+```text
+Available Credit must never become negative.
+```
+
+---
+
+# 8. Validation
+
+Jakarta Bean Validation is used throughout the REST API.
+
+Examples:
 
 ```java
 @NotBlank
@@ -449,117 +512,153 @@ Examples include:
 @Pattern
 @Size
 @DecimalMin
+@Valid
 ```
 
-Invalid requests return HTTP:
+Invalid requests return:
 
 ```text
-400 Bad Request
+HTTP 400 Bad Request
 ```
 
 ---
 
-# 8. Exception Handling
+# 9. Exception Handling
 
-A global exception handler has been added using:
+Centralized exception handling is implemented using:
 
 ```java
 @RestControllerAdvice
 ```
 
-Validation exceptions are converted into readable API responses.
-
-The current implementation still uses generic runtime exceptions for some service-layer errors. Custom domain exceptions are planned as part of the remaining work.
-
----
-
-# 9. Transaction Management
-
-Spring transaction management is used for financial operations:
-
-```java
-@Transactional
-```
-
-A successful purchase performs both:
+Custom exceptions include:
 
 ```text
-Update Credit Card
-        +
-Insert Transaction
+ResourceNotFoundException
+DuplicateResourceException
+InvalidTransactionException
 ```
 
-within the service operation.
+## HTTP Error Handling
 
-Payment processing similarly updates the card balance and records the payment transaction.
-
-Further concurrency protection is planned before final completion.
-
----
-
-# Current Project Status
-
-| Module | Status |
+| Situation | HTTP Status |
 |---|---|
-| Oracle Database Setup | Completed |
-| Spring Boot Setup | Completed |
-| Oracle + JPA Connection | Completed |
-| Customer CRUD | Completed |
-| Customer Validation | Completed |
-| Merchant CRUD | Completed |
-| Credit Card Management | Completed |
-| Customer/Card Relationship | Completed |
-| Block/Unblock Card | Completed |
-| Purchase Transactions | Completed |
-| Failed Purchase Recording | Completed |
-| Partial Payment | Completed |
-| Full Payment | Completed |
-| Payment Transaction Recording | Completed |
-| Transaction History | Completed |
-| Basic Global Exception Handling | Completed |
-| Custom Domain Exceptions | Pending |
-| Concurrent Balance Protection | Pending |
-| Reports | Pending |
-| Automated Tests | Pending |
-| Final API Testing | Pending |
-| Final Documentation/Cleanup | Pending |
+| Invalid request data | 400 Bad Request |
+| Invalid business operation | 400 Bad Request |
+| Resource not found | 404 Not Found |
+| Duplicate resource | 409 Conflict |
+| Unexpected server error | 500 Internal Server Error |
+
+Example error:
+
+```json
+{
+    "timestamp": "2026-09-27T12:00:00",
+    "status": 404,
+    "error": "Not Found",
+    "message": "Credit card not found: 9999999999999999",
+    "path": "/api/credit-cards/9999999999999999"
+}
+```
 
 ---
 
-# Reports To Be Implemented
+# 10. Reports
 
-The project requirements include the following reports:
+The project includes the required financial and operational reports.
 
-1. Display all customer details
-2. Display all credit card details
-3. Display all merchant details
-4. Display complete transaction history
-5. Customers with the highest outstanding balance
-6. Customers with the lowest outstanding balance
-7. Merchant with the highest sales amount
-8. Merchant with the highest number of transactions
-9. Most frequently used credit card
-10. Least frequently used credit card
-11. Total purchase amount for today
-12. Total payment amount for today
-13. All blocked credit cards
-14. Cards whose available credit is below 20% of credit limit
-15. Customer who has spent the highest amount
-16. Customer who made the highest payment
-17. Total outstanding amount across all customers
-18. Average purchase transaction amount
-19. Largest purchase transaction
-20. Monthly spending summary of every customer
+## Reports 1-4
 
-These reports are part of the next development phase.
+Existing APIs provide:
+
+| # | Report | Endpoint |
+|---|---|---|
+| 1 | All customers | `GET /api/customers` |
+| 2 | All credit cards | `GET /api/credit-cards` |
+| 3 | All merchants | `GET /api/merchants` |
+| 4 | Complete transaction history | `GET /api/transactions` |
+
+## Reports 5-20
+
+| # | Report | Endpoint |
+|---|---|---|
+| 5 | Highest outstanding customer | `/api/reports/highest-outstanding` |
+| 6 | Lowest outstanding customer | `/api/reports/lowest-outstanding` |
+| 7 | Merchant with highest sales | `/api/reports/highest-sales-merchant` |
+| 8 | Merchant with highest transaction count | `/api/reports/highest-transaction-merchant` |
+| 9 | Most frequently used card | `/api/reports/most-used-card` |
+| 10 | Least frequently used card | `/api/reports/least-used-card` |
+| 11 | Today's total purchases | `/api/reports/today-purchases` |
+| 12 | Today's total payments | `/api/reports/today-payments` |
+| 13 | Blocked cards | `/api/reports/blocked-cards` |
+| 14 | Cards below 20% available credit | `/api/reports/low-available-credit` |
+| 15 | Highest spending customer | `/api/reports/highest-spending-customer` |
+| 16 | Customer with highest payment | `/api/reports/highest-payment-customer` |
+| 17 | Total outstanding amount | `/api/reports/total-outstanding` |
+| 18 | Average purchase amount | `/api/reports/average-purchase` |
+| 19 | Largest purchase | `/api/reports/largest-purchase` |
+| 20 | Monthly customer spending | `/api/reports/monthly-spending` |
+
+Reports use successful financial transactions when calculating actual spending, sales, payments, usage, and averages.
+
+---
+
+# 11. Example Report APIs
+
+## Total Outstanding
+
+```text
+GET /api/reports/total-outstanding
+```
+
+Example:
+
+```json
+{
+    "totalOutstandingAmount": 3000.00
+}
+```
+
+## Today's Purchases
+
+```text
+GET /api/reports/today-purchases
+```
+
+Example:
+
+```json
+{
+    "totalPurchaseAmountToday": 5000.00
+}
+```
+
+## Monthly Spending
+
+```text
+GET /api/reports/monthly-spending
+```
+
+Example:
+
+```json
+[
+    {
+        "customerId": 1,
+        "customerName": "Rahul Sharma",
+        "month": "2026-09",
+        "totalSpending": 5000
+    }
+]
+```
 
 ---
 
 # Database Configuration
 
-Database credentials should not be committed to Git.
+Database credentials must not be committed to Git.
 
-`application.properties` can reference environment variables:
+`application.properties` uses environment variables:
 
 ```properties
 spring.datasource.url=${DB_URL}
@@ -570,11 +669,12 @@ spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
 
 spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
 spring.jpa.hibernate.ddl-auto=validate
+
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 ```
 
-Configure the following environment variables locally:
+Configure locally:
 
 ```text
 DB_URL
@@ -582,7 +682,7 @@ DB_USERNAME
 DB_PASSWORD
 ```
 
-Do not commit real database passwords or other credentials to the repository.
+Do **not** commit `.env`, database passwords, tokens, or other credentials.
 
 ---
 
@@ -590,7 +690,7 @@ Do not commit real database passwords or other credentials to the repository.
 
 ## Prerequisites
 
-Ensure the following are installed/configured:
+Install/configure:
 
 - Java 25
 - Maven
@@ -598,29 +698,21 @@ Ensure the following are installed/configured:
 - Git
 - Postman or another REST client
 
-Configure the database environment variables and ensure the Oracle database is running.
+Ensure Oracle is running and the database environment variables are configured.
 
-Run using Maven Wrapper on Windows:
+## Windows
 
 ```bash
 mvnw.cmd spring-boot:run
 ```
 
-On Linux/macOS:
+## Linux / macOS
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-Or run:
-
-```text
-CreditCardManagementApplication.java
-```
-
-from the IDE.
-
-The application runs by default on:
+The application runs by default at:
 
 ```text
 http://localhost:8080
@@ -628,27 +720,119 @@ http://localhost:8080
 
 ---
 
-# Development Progress
+# Current Development Status
 
-The main CRUD and financial transaction functionality is currently implemented.
-
-The next development phase will focus on:
-
-1. Custom exception classes and improved HTTP error handling
-2. Concurrency protection for financial balance updates
-3. Implementation of all required reports
-4. Automated unit/integration testing
-5. Complete API testing
-6. Final project cleanup and documentation
+| Feature | Status |
+|---|---|
+| Oracle Database Schema | Completed |
+| Spring Boot Setup | Completed |
+| Oracle/JPA Integration | Completed |
+| Customer CRUD | Completed |
+| Customer Validation | Completed |
+| Merchant CRUD | Completed |
+| Credit Card Management | Completed |
+| Customer/Card Relationship | Completed |
+| Block/Unblock Card | Completed |
+| Purchase Processing | Completed |
+| Failed Purchase Recording | Completed |
+| Partial Payment | Completed |
+| Full Payment | Completed |
+| Payment Transaction Recording | Completed |
+| Transaction History | Completed |
+| Bean Validation | Completed |
+| Global Exception Handling | Completed |
+| Custom Exceptions | Completed |
+| Transaction Management | Completed |
+| Pessimistic Concurrency Protection | Completed |
+| Reports 1-20 | Implemented |
+| Automated Unit Tests | Pending |
+| Integration Tests | Pending |
+| Complete Postman Regression Testing | Pending |
+| Final Code Cleanup | Pending |
 
 ---
 
-## Repository
+# Remaining Work
 
-**Project:** Credit Card Management System
+The primary application functionality is implemented.
 
-**Group:** `com.ofss`
+The remaining development phase focuses on software quality and final verification:
 
-**Architecture:** Layered Spring Boot Application
+1. Add unit tests
+2. Add service-layer tests
+3. Add REST/controller integration tests
+4. Test all business rules
+5. Test all report APIs
+6. Prepare Postman collection
+7. Perform final code cleanup
+8. Finalize documentation
 
-**Database:** Oracle Database 26ai
+---
+
+# Important Business Rules
+
+The application enforces the following rules:
+
+- Card numbers must be unique
+- A customer may own multiple credit cards
+- Purchases are allowed only on ACTIVE cards
+- Blocked cards cannot perform purchases
+- Expired cards cannot perform purchases
+- Available credit must never become negative
+- Payment cannot exceed outstanding balance
+- Every successful purchase is recorded
+- Every successful payment is recorded
+- Failed business-rule transactions are recorded
+- Purchase decreases available credit
+- Purchase increases outstanding amount
+- Payment increases available credit
+- Payment decreases outstanding amount
+- Concurrent financial operations lock the relevant credit-card row
+
+---
+
+# Git Workflow
+
+After completing a feature:
+
+```bash
+git status
+git add .
+git commit -m "description of change"
+git push
+```
+
+Example commits:
+
+```text
+feat: add customer management
+feat: add merchant management
+feat: add credit card management
+feat: add purchase and payment processing
+feat: improve exception handling
+feat: add concurrency protection for card transactions
+feat: add reporting module
+test: add application tests
+docs: update project README
+```
+
+---
+
+# Project Status
+
+**Core Application: Implemented**
+
+**Reports: Implemented**
+
+**Testing and Final Quality Checks: In Progress**
+
+---
+
+## Project Information
+
+**Project:** Credit Card Management System  
+**Base Package:** `com.ofss.creditcardmanagement`  
+**Architecture:** Layered Spring Boot Application  
+**Database:** Oracle Database 26ai  
+**Build Tool:** Maven  
+**Language:** Java 25
