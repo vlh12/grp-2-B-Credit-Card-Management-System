@@ -14,6 +14,8 @@ import com.ofss.creditcardmanagement.entity.CreditCard;
 import com.ofss.creditcardmanagement.entity.Merchant;
 import com.ofss.creditcardmanagement.entity.TransactionStatus;
 import com.ofss.creditcardmanagement.entity.TransactionType;
+import com.ofss.creditcardmanagement.exception.InvalidTransactionException;
+import com.ofss.creditcardmanagement.exception.ResourceNotFoundException;
 import com.ofss.creditcardmanagement.repository.CardTransactionRepository;
 import com.ofss.creditcardmanagement.repository.CreditCardRepository;
 import com.ofss.creditcardmanagement.repository.MerchantRepository;
@@ -41,21 +43,24 @@ public class TransactionService {
      * ============================================================
      */
     @Transactional
-    public CardTransaction makePurchase(PurchaseRequest request) {
+    public CardTransaction makePurchase(
+            PurchaseRequest request) {
 
-        CreditCard card = creditCardRepository
-                .findById(request.getCardNumber())
-                .orElseThrow(() ->
-                        new RuntimeException(
+        CreditCard card =
+                creditCardRepository.findById(
+                        request.getCardNumber()
+                ).orElseThrow(() ->
+                        new ResourceNotFoundException(
                                 "Credit card not found: "
                                         + request.getCardNumber()
                         )
                 );
 
-        Merchant merchant = merchantRepository
-                .findById(request.getMerchantId())
-                .orElseThrow(() ->
-                        new RuntimeException(
+        Merchant merchant =
+                merchantRepository.findById(
+                        request.getMerchantId()
+                ).orElseThrow(() ->
+                        new ResourceNotFoundException(
                                 "Merchant not found with ID: "
                                         + request.getMerchantId()
                         )
@@ -63,9 +68,6 @@ public class TransactionService {
 
         BigDecimal amount = request.getAmount();
 
-        /*
-         * Card must be ACTIVE.
-         */
         if (card.getCardStatus() != CardStatus.ACTIVE) {
 
             return saveFailedTransaction(
@@ -76,9 +78,17 @@ public class TransactionService {
             );
         }
 
-        /*
-         * Available credit must be sufficient.
-         */
+        if (card.getExpiryDate()
+                .isBefore(java.time.LocalDate.now())) {
+
+            return saveFailedTransaction(
+                    card,
+                    merchant,
+                    TransactionType.PURCHASE,
+                    amount
+            );
+        }
+
         if (card.getAvailableCredit()
                 .compareTo(amount) < 0) {
 
@@ -90,17 +100,11 @@ public class TransactionService {
             );
         }
 
-        /*
-         * Reduce available credit.
-         */
         card.setAvailableCredit(
                 card.getAvailableCredit()
                         .subtract(amount)
         );
 
-        /*
-         * Increase outstanding amount.
-         */
         card.setOutstandingAmount(
                 card.getOutstandingAmount()
                         .add(amount)
@@ -108,22 +112,15 @@ public class TransactionService {
 
         creditCardRepository.save(card);
 
-        /*
-         * Record successful purchase.
-         */
         CardTransaction transaction =
                 new CardTransaction();
 
         transaction.setCreditCard(card);
-
         transaction.setMerchant(merchant);
-
         transaction.setTransactionType(
                 TransactionType.PURCHASE
         );
-
         transaction.setAmount(amount);
-
         transaction.setStatus(
                 TransactionStatus.SUCCESS
         );
@@ -140,10 +137,11 @@ public class TransactionService {
     public CardTransaction makePayment(
             PaymentRequest request) {
 
-        CreditCard card = creditCardRepository
-                .findById(request.getCardNumber())
-                .orElseThrow(() ->
-                        new RuntimeException(
+        CreditCard card =
+                creditCardRepository.findById(
+                        request.getCardNumber()
+                ).orElseThrow(() ->
+                        new ResourceNotFoundException(
                                 "Credit card not found: "
                                         + request.getCardNumber()
                         )
@@ -151,9 +149,6 @@ public class TransactionService {
 
         BigDecimal amount = request.getAmount();
 
-        /*
-         * Payment cannot exceed outstanding balance.
-         */
         if (amount.compareTo(
                 card.getOutstandingAmount()) > 0) {
 
@@ -165,17 +160,11 @@ public class TransactionService {
             );
         }
 
-        /*
-         * Reduce outstanding amount.
-         */
         card.setOutstandingAmount(
                 card.getOutstandingAmount()
                         .subtract(amount)
         );
 
-        /*
-         * Increase available credit.
-         */
         card.setAvailableCredit(
                 card.getAvailableCredit()
                         .add(amount)
@@ -183,25 +172,15 @@ public class TransactionService {
 
         creditCardRepository.save(card);
 
-        /*
-         * Record successful payment.
-         */
         CardTransaction transaction =
                 new CardTransaction();
 
         transaction.setCreditCard(card);
-
-        /*
-         * Payment has no merchant.
-         */
         transaction.setMerchant(null);
-
         transaction.setTransactionType(
                 TransactionType.PAYMENT
         );
-
         transaction.setAmount(amount);
-
         transaction.setStatus(
                 TransactionStatus.SUCCESS
         );
@@ -211,7 +190,7 @@ public class TransactionService {
 
     /*
      * ============================================================
-     * SAVE FAILED TRANSACTION
+     * FAILED TRANSACTION
      * ============================================================
      */
     private CardTransaction saveFailedTransaction(
@@ -224,15 +203,11 @@ public class TransactionService {
                 new CardTransaction();
 
         transaction.setCreditCard(card);
-
         transaction.setMerchant(merchant);
-
         transaction.setTransactionType(
                 transactionType
         );
-
         transaction.setAmount(amount);
-
         transaction.setStatus(
                 TransactionStatus.FAILED
         );
@@ -242,7 +217,7 @@ public class TransactionService {
 
     /*
      * ============================================================
-     * GET ALL TRANSACTIONS
+     * ALL TRANSACTIONS
      * ============================================================
      */
     @Transactional(readOnly = true)
@@ -253,7 +228,7 @@ public class TransactionService {
 
     /*
      * ============================================================
-     * GET TRANSACTIONS BY CARD
+     * TRANSACTIONS BY CARD
      * ============================================================
      */
     @Transactional(readOnly = true)
@@ -262,9 +237,8 @@ public class TransactionService {
 
         if (!creditCardRepository.existsById(cardNumber)) {
 
-            throw new RuntimeException(
-                    "Credit card not found: "
-                            + cardNumber
+            throw new ResourceNotFoundException(
+                    "Credit card not found: " + cardNumber
             );
         }
 
