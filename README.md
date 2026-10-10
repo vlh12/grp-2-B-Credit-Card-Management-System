@@ -37,7 +37,7 @@ The Credit Card Management System provides REST APIs that allow a bank to:
 | Oracle Database 26ai | Database |
 | Oracle JDBC Driver | Database connectivity |
 | Maven | Build and dependency management |
-| Postman | REST API testing |
+| Insomnia | REST API testing |
 | Git | Version control |
 | GitHub | Source code repository |
 
